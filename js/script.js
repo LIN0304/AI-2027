@@ -420,3 +420,40 @@ function maybeShowEndBanner(tp) {
     const isEnd = ['2030', 'outro'].includes(tp);
     endBanner.style.display = isEnd ? 'block' : 'none';
 }
+
+// ========= MATRIX BACKGROUND =========
+const matrixCanvas = document.getElementById('matrix-canvas');
+if (matrixCanvas) {
+    const ctx = matrixCanvas.getContext('2d');
+    let width = matrixCanvas.width = window.innerWidth;
+    let height = matrixCanvas.height = window.innerHeight;
+    const letters = 'アカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const fontSize = 16;
+    let columns = Math.floor(width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#0f0';
+        ctx.font = fontSize + 'px monospace';
+        drops.forEach((y, i) => {
+            const text = letters.charAt(Math.floor(Math.random() * letters.length));
+            ctx.fillText(text, i * fontSize, y * fontSize);
+            if (y * fontSize > height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        });
+    }
+
+    function resizeMatrix() {
+        width = matrixCanvas.width = window.innerWidth;
+        height = matrixCanvas.height = window.innerHeight;
+        columns = Math.floor(width / fontSize);
+        drops = Array(columns).fill(1);
+    }
+
+    window.addEventListener('resize', resizeMatrix);
+    setInterval(drawMatrix, 50);
+}
