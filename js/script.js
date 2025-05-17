@@ -264,13 +264,7 @@ function updateDashboard(data) {
 // ========= Intersection Observer / Timeline Activation =========
 const sections = document.querySelectorAll('.content section[data-timepoint]');
 let lastActivatedTimepoint = null;
-// Adjust rootMargin: top margin should account for sticky header height, bottom margin for better trigger zone
-const stickyHeaderHeight = document.getElementById('timeline-bar').offsetHeight + 20; // Approx height + padding
-const observerOptions = {
-    root: null,
-    rootMargin: `-${stickyHeaderHeight}px 0px -40% 0px`, // Negative top margin, percentage bottom
-    threshold: 0 // Trigger as soon as any part enters the margin
-};
+let observer; // IntersectionObserver instance (initialized after load)
 
 const observerCallback = (entries, observer) => {
     let intersectingEntry = null;
@@ -301,23 +295,31 @@ const observerCallback = (entries, observer) => {
      }
  };
 
-const observer = new IntersectionObserver(observerCallback, observerOptions);
-sections.forEach(section => observer.observe(section));
-
-// Initial State - Activate the first section ('intro')
+// Initialize observer and dashboard once the page (and styles) have fully loaded
 window.addEventListener('load', () => {
-     const firstTimepointId = sections[0]?.dataset.timepoint || 'intro';
-     if (firstTimepointId && timelineData[firstTimepointId]) {
-         updateDashboard(timelineData[firstTimepointId]);
-         lastActivatedTimepoint = firstTimepointId;
-         sections[0].classList.add('is-visible');
-         updateTimelineBarActive(firstTimepointId);
-         maybeShowEndBanner(firstTimepointId);
-         updateSparkline(); // Initial sparkline draw
-     }
-      // Recalculate sparkline on resize
-     window.addEventListener('resize', updateSparkline);
- });
+    const stickyHeaderHeight = document.getElementById('timeline-bar').offsetHeight + 20; // Approx height + padding
+    const observerOptions = {
+        root: null,
+        rootMargin: `-${stickyHeaderHeight}px 0px -40% 0px`, // Negative top margin, percentage bottom
+        threshold: 0 // Trigger as soon as any part enters the margin
+    };
+
+    observer = new IntersectionObserver(observerCallback, observerOptions);
+    sections.forEach(section => observer.observe(section));
+
+    const firstTimepointId = sections[0]?.dataset.timepoint || 'intro';
+    if (firstTimepointId && timelineData[firstTimepointId]) {
+        updateDashboard(timelineData[firstTimepointId]);
+        lastActivatedTimepoint = firstTimepointId;
+        sections[0].classList.add('is-visible');
+        updateTimelineBarActive(firstTimepointId);
+        maybeShowEndBanner(firstTimepointId);
+        updateSparkline(); // Initial sparkline draw
+    }
+
+    // Recalculate sparkline on resize
+    window.addEventListener('resize', updateSparkline);
+});
 
 
 // ========= Timeline Bar Navigation =========
